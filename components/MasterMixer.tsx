@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View } from '../types';
 import { audioEngine } from '../services/AudioEngine';
@@ -115,7 +116,7 @@ const MasterMixer: React.FC<MasterMixerProps> = ({ activeView, isOpen, onClose, 
                     </p>
                     <div className="flex justify-between gap-3">
                         {eqBands.map(({ label, key }) => {
-                             const val = eq[key];
+                             const val = eq[key] as number;
                              return (
                                 <div key={label} className="flex flex-col items-center flex-1 group">
                                     <div className="h-32 w-10 bg-black/40 rounded-full relative border border-white/10 overflow-hidden shadow-inner">

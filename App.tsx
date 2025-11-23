@@ -1,12 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import ReactDOM from 'react-dom/client';
 import Home from './components/Home';
-import { TarotRoom } from './components/TarotRoom';
-import GeometryRoom from './components/GeometryRoom';
-import TantraRoom from './components/TantraRoom';
-import RelationshipRoom from './components/RelationshipRoom';
-import { MedicineRoom } from './components/MedicineRoom';
-import MarketingRoom from './components/MarketingRoom';
 import { CoherenceProvider } from './providers/CoherenceProvider';
 import { RoomStateProvider } from './providers/RoomStateProvider';
 import GenerativeArt from './components/GenerativeArt';
@@ -14,7 +9,17 @@ import ProactiveSuggestion from './components/ProactiveSuggestion';
 import CoherenceAgent from './components/CoherenceAgent';
 import Header from './components/Header';
 import AudioOrchestrator from './components/AudioOrchestrator';
+import PortalLoader from './components/PortalLoader';
 import { View, AppMode } from './types';
+
+// --- Lazy Load Rooms for Performance Optimization ---
+// Note: We handle both default and named exports to ensure compatibility
+const TarotRoom = React.lazy(() => import('./components/TarotRoom').then(module => ({ default: module.TarotRoom })));
+const GeometryRoom = React.lazy(() => import('./components/GeometryRoom'));
+const TantraRoom = React.lazy(() => import('./components/TantraRoom'));
+const RelationshipRoom = React.lazy(() => import('./components/RelationshipRoom'));
+const MedicineRoom = React.lazy(() => import('./components/MedicineRoom').then(module => ({ default: module.MedicineRoom })));
+const MarketingRoom = React.lazy(() => import('./components/MarketingRoom'));
 
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('home');
@@ -38,22 +43,28 @@ const App: React.FC = () => {
     };
 
     const renderRoom = () => {
-        switch (currentView) {
-            case 'tarot':
-                return <TarotRoom onNavigate={handleNavigate} />;
-            case 'geometry':
-                return <GeometryRoom onNavigate={handleNavigate} />;
-            case 'tantra':
-                return <TantraRoom onNavigate={handleNavigate} appMode={appMode} setAppMode={setAppMode} />;
-            case 'relationship':
-                return <RelationshipRoom onNavigate={handleNavigate} />;
-            case 'medicine':
-                return <MedicineRoom onNavigate={handleNavigate} />;
-            case 'marketing':
-                return <MarketingRoom onNavigate={handleNavigate} />;
-            default:
-                return null;
-        }
+        return (
+            <Suspense fallback={<PortalLoader />}>
+                {(() => {
+                    switch (currentView) {
+                        case 'tarot':
+                            return <TarotRoom onNavigate={handleNavigate} />;
+                        case 'geometry':
+                            return <GeometryRoom onNavigate={handleNavigate} />;
+                        case 'tantra':
+                            return <TantraRoom onNavigate={handleNavigate} appMode={appMode} setAppMode={setAppMode} />;
+                        case 'relationship':
+                            return <RelationshipRoom onNavigate={handleNavigate} />;
+                        case 'medicine':
+                            return <MedicineRoom onNavigate={handleNavigate} />;
+                        case 'marketing':
+                            return <MarketingRoom onNavigate={handleNavigate} />;
+                        default:
+                            return null;
+                    }
+                })()}
+            </Suspense>
+        );
     };
 
     const HeaderComponent = (
