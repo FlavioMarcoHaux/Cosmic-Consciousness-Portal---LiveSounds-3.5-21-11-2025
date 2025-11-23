@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getYouTubeSEO, generateVisionImage, getYouTubeThumbnailPrompt, getTextToSpeech } from '../services/geminiService';
 import { YouTubeSEO, MarketingHistoryItem } from '../types';
 import JSZip from 'jszip';
-import { decode, decodeAudioData, audioBufferToWav, mergeAudioBuffers } from '../utils/audioUtils';
+import { decode, OPFSWavBuilder, chunkText } from '../utils/audioUtils';
 
 interface YouTubeAgentProps {
     theme: string;
@@ -114,34 +114,56 @@ const YouTubeAgent: React.FC<YouTubeAgentProps> = ({ theme, focus }) => {
         setIsAudioLoading(true);
         setAudioProgress(0);
 
-        try {
-            // Simple chunking by paragraphs/newlines to avoid timeouts
-            const chunks = data.script.split('\n').filter(line => line.trim().length > 0);
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const decodedBuffers: AudioBuffer[] = [];
+        let wavBuilder: OPFSWavBuilder | null = null;
 
+        try {
+            // Initialize OPFS Builder
+            const filename = `temp_${Date.now()}.wav`;
+            wavBuilder = new OPFSWavBuilder(filename);
+            await wavBuilder.init();
+
+            // Chunking logic - Using smart chunkText to handle long paragraphs safely
+            const chunks = chunkText(data.script);
+            
             for (let i = 0; i < chunks.length; i++) {
                 const chunk = chunks[i];
-                // Skip headers like [GANCHO] if preferred, but reading them is okay for draft
-                const base64 = await getTextToSpeech(chunk);
-                if (base64) {
-                    const buffer = await decodeAudioData(decode(base64), audioContext, 24000, 1);
-                    decodedBuffers.push(buffer);
+                // Retry logic for robustness
+                let base64 = null;
+                let retries = 3;
+                
+                while (retries > 0 && !base64) {
+                    try {
+                        base64 = await getTextToSpeech(chunk);
+                    } catch (e) {
+                        console.warn(`Retrying chunk ${i}...`, e);
+                        retries--;
+                        await new Promise(r => setTimeout(r, 1500));
+                    }
                 }
+                
+                if (base64) {
+                    // Decode base64 to raw bytes (Uint8Array)
+                    const rawBytes = decode(base64);
+                    // Stream directly to disk
+                    await wavBuilder.appendChunk(rawBytes);
+                } else {
+                    console.error(`Failed to generate audio for chunk ${i}`);
+                }
+                
                 setAudioProgress(Math.round(((i + 1) / chunks.length) * 100));
             }
 
-            if (decodedBuffers.length > 0) {
-                const mergedBuffer = mergeAudioBuffers(decodedBuffers, audioContext);
-                const wavBlob = audioBufferToWav(mergedBuffer);
-                setAudioBlob(wavBlob);
-            }
+            // Finalize file (Write Header)
+            const finalBlob = await wavBuilder.finalize();
+            setAudioBlob(finalBlob);
 
         } catch (e) {
-            console.error("Audio Generation Error", e);
+            console.error("Audio Generation Error (OPFS/Streaming):", e);
+            alert("Erro na geração de áudio. Verifique a conexão.");
         } finally {
             setIsAudioLoading(false);
             setAudioProgress(0);
+            // Optional: Clean up old file if needed later, or keep it as cache
         }
     };
 
@@ -368,19 +390,28 @@ ${data.script}
                                             <button 
                                                 onClick={handleGenerateFullAudio}
                                                 disabled={isAudioLoading}
-                                                className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 text-purple-200 rounded-lg hover:bg-purple-800/50 transition-colors text-sm disabled:opacity-50"
+                                                className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 text-purple-200 rounded-lg hover:bg-purple-800/50 transition-colors text-sm disabled:opacity-50 shadow-lg shadow-purple-900/20"
                                             >
                                                 {isAudioLoading ? (
-                                                    <span>Gerando Áudio {audioProgress}%</span>
+                                                    <>
+                                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                        <span>Gravando em Disco... {audioProgress}%</span>
+                                                    </>
                                                 ) : (
                                                     <>
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
-                                                        Gerar Narração
+                                                        Gerar Narração (Stream OPFS)
                                                     </>
                                                 )}
                                             </button>
                                         ) : (
-                                            <audio controls src={URL.createObjectURL(audioBlob)} className="h-9 w-64" />
+                                            <div className="flex items-center gap-2">
+                                                <audio controls src={URL.createObjectURL(audioBlob)} className="h-9 w-64" />
+                                                <span className="text-xs text-green-400 flex items-center gap-1">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                                                    Pronto no Disco
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
 

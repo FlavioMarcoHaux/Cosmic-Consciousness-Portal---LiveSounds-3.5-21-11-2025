@@ -116,7 +116,7 @@ const MasterMixer: React.FC<MasterMixerProps> = ({ activeView, isOpen, onClose, 
                     </p>
                     <div className="flex justify-between gap-3">
                         {eqBands.map(({ label, key }) => {
-                             const val = eq[key] as number;
+                             const val: number = eq[key];
                              return (
                                 <div key={label} className="flex flex-col items-center flex-1 group">
                                     <div className="h-32 w-10 bg-black/40 rounded-full relative border border-white/10 overflow-hidden shadow-inner">
@@ -163,12 +163,12 @@ const MasterMixer: React.FC<MasterMixerProps> = ({ activeView, isOpen, onClose, 
                             <div key={name} className="group">
                                 <div className="flex justify-between text-[10px] text-white/90 mb-1.5 font-medium">
                                     <span className="uppercase tracking-wider">{name}</span>
-                                    <span className="font-mono text-cyan-300">{Math.round(vol * 100)}%</span>
+                                    <span className="font-mono text-cyan-300">{Math.round((vol as number) * 100)}%</span>
                                 </div>
                                 <div className="relative h-3 bg-black/50 rounded-full overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors shadow-inner">
                                     <div 
                                         className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 to-purple-500 transition-all duration-150 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                        style={{ width: `${vol * 100}%` }}
+                                        style={{ width: `${(vol as number) * 100}%` }}
                                     ></div>
                                     <input 
                                         type="range" min="0" max="1" step="0.01"

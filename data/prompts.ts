@@ -60,16 +60,30 @@ Estruture sua resposta estritamente como um JSON.
 `;
 
 export const getMeditationLengthInstruction = (duration: number) => {
-    if (duration <= 2) {
-        return `A meditação deve ser uma introdução curta, cerca de 300 palavras.`;
-    } else if (duration <= 5) {
-        return `A meditação deve ser uma exploração de 800 palavras.`;
+    if (duration <= 5) {
+        return `A meditação deve ser uma introdução curta e direta, cerca de 600 palavras.`;
+    } else if (duration <= 10) {
+        return `A meditação deve ser moderada, cerca de 1200 palavras.`;
     } else if (duration <= 15) {
-        return `A meditação deve ser profunda, totalizando aproximadamente 2500 palavras.`;
+        return `A meditação deve ser profunda, cerca de 2000 palavras. Use pausas (...) para indicar silêncio.`;
+    } else if (duration <= 20) {
+        return `**ESTRATÉGIA DE 20 MINUTOS:**
+        1. **Escaneamento Corporal:** Antes de qualquer ação, dedique 30% do texto guiando o relaxamento detalhado de cada parte do corpo (pés, pernas, quadril, peito, mãos, pescoço, rosto).
+        2. **Respiração:** Guie 3 ciclos completos de respiração lenta entre cada transição.
+        3. **Volume:** O texto total deve ter aproximadamente 3000 palavras.`;
     } else if (duration <= 30) {
-        return `Esta é uma jornada profunda. O texto deve ser extenso (4000+ palavras), com pausas longas implícitas para respiração.`;
+        return `**ESTRATÉGIA DE 30 MINUTOS:**
+        1. **Narrativa Ambiental Fractal:** Descreva a floresta em camadas. O chão (musgo, formigas), o meio (troncos, cipós), o alto (folhas, luz, pássaros). Gaste tempo na ambientação.
+        2. **Loops de Respiração:** Escreva explicitamente: "Inspire... 1, 2, 3, 4. Segure... Solte...". Repita isso 5 vezes no texto.
+        3. **Volume:** O texto total deve ter aproximadamente 4500 palavras. Use muitas reticências (...) para forçar o narrador a falar devagar.`;
     } else { // 45+ min
-        return `Esta é uma JORNADA ÉPICA e COMPLETA (45min+). O texto PRECISA ser extremamente detalhado, expansivo e hipnótico. Você deve gerar um conteúdo massivo (6000+ palavras no total). Não tenha pressa. Explore cada sensação, cada som da floresta, cada memória ancestral. Detalhe a limpeza de cada chakra, um por um. Guie o silêncio. É crucial que o texto seja longo o suficiente para sustentar 45 minutos de fala lenta.`;
+        return `**ESTRATÉGIA CRÍTICA DE 45 MINUTOS (HIPER-VERBOSIDADE):**
+        Para atingir 45 minutos reais de áudio falado, você deve ser EXTREMAMENTE detalhista e repetitivo.
+        1. **Estrutura de 12 Capítulos:** Você deve gerar texto suficiente para 12 etapas distintas.
+        2. **Loops Mântricos Escritos:** Quando pedir para respirar ou sentir, escreva a instrução repetida 7 a 10 vezes no texto. Exemplo: "Sinta a terra... (pausa)... Sinta a terra... (pausa)... Mais uma vez, sinta a terra...".
+        3. **Silêncio Artificial:** Use quebras de linha e reticências (...) entre cada frase curta. O objetivo é um ritmo de transe profundo e lento.
+        4. **Detalhamento Microscópico:** Não diga "limpe seus medos". Diga "Imagine uma fumaça escura saindo do seu dedo mindinho... agora do anelar... agora do médio...". Detalhe o micro.
+        5. **Volume:** O texto deve ser MASSIVO (6000+ palavras). Não economize tokens.`;
     }
 };
 
@@ -180,15 +194,44 @@ Sua tarefa é guiar um ritual profundo, respeitoso e autêntico.
 IMPORTANTE: O tempo solicitado para a jornada é de ${duration} minutos.
 ${getMeditationLengthInstruction(duration)}
 
-Estruture sua resposta estritamente como um array de objetos JSON, onde cada objeto tem as chaves "title" e "text". Siga esta estrutura sagrada:
+Estruture sua resposta estritamente como um array de objetos JSON, onde cada objeto tem as chaves "title" e "text".
 
-1.  **"Abertura dos Caminhos (Sintonização)"**: Invoque a força da floresta. Use termos como "Txai", "Haux Haux". Fale sobre o espírito da medicina. Peça licença aos guardiões.
-2.  **"O Rezo e o Sopro"**: O momento sagrado de aplicar o Rapé. Instrua o foco na intenção ("${intention || 'Cura e Verdade'}"). Descreva o silêncio, a conexão com o Tepi/Kuripe. O sopro da jiboia.
-3.  **"A Força Chegou (Limpeza)"**: A medicina atua. Guie o usuário pela "peia" ou limpeza. É o momento de limpar o Panema (energia densa). Seja firme, como um guerreiro espiritual, ajudando a respirar e soltar. "Deixa a força trabalhar".
-4.  **"O Voo da Águia (Miração)"**: A expansão da consciência. Guie uma jornada visual baseada em: ${medicineProperty}. Leve a alma para voar sobre a floresta, encontrando clareza e visão.
-5.  **"A Volta para a Aldeia (Integração)"**: O retorno suave ao corpo. O agradecimento. O fechamento do corpo ("Kene" de proteção). A gratidão à medicina e à ancestralidade.
+${duration >= 40 ? 
+// 45 MINUTOS: ESTRUTURA MASSIVA
+`PARA GARANTIR A DURAÇÃO DE 45 MINUTOS, VOCÊ DEVE SEGUIR ESTA ESTRUTURA DE 12 FASES OBRIGATÓRIAS. Escreva textos longos, lentos e repetitivos para cada fase:
+1. "Abertura dos Caminhos" (Chame as 4 direções com detalhes)
+2. "Conexão com a Terra" (Body Scan detalhado dos pés ao quadril)
+3. "Alinhamento da Coluna" (Body Scan detalhado do quadril à cabeça)
+4. "O Preparo Sagrado" (Conexão com o instrumento Tepi/Kuripe e o pó)
+5. "Acalmando a Mente" (Exercícios de respiração mântrica repetitiva)
+6. "O Sopro da Jiboia" (O momento da aplicação sagrada)
+7. "A Chegada da Força" (Primeiras sensações físicas)
+8. "A Limpeza da Terra" (Limpeza de densidades físicas e dores)
+9. "A Cura pelas Águas" (Limpeza emocional e fluidez)
+10. "A Ascensão pelo Fogo" (O Voo da Águia e a visão espiritual)
+11. "O Rezo da Gratidão" (Agradecimento lento a cada elemento da floresta)
+12. "A Volta para a Aldeia" (Aterrissagem muito lenta e fechamento)` 
+: duration >= 30 ?
+// 30 MINUTOS: ESTRUTURA EXPANDIDA
+`PARA 30 MINUTOS, USE ESTA ESTRUTURA DE 8 FASES:
+1. "Abertura e Proteção" (Invocação)
+2. "Escaneamento do Corpo" (Relaxamento físico detalhado)
+3. "O Preparo do Rezo" (Intenção)
+4. "O Sopro Sagrado" (Aplicação)
+5. "A Força da Floresta" (Expansão sensorial)
+6. "Limpeza Profunda" (Expurgo)
+7. "Miração e Voo" (Viagem astral)
+8. "Integração Suave" (Retorno)`
+: 
+// PADRÃO (< 30 MIN)
+`Siga esta estrutura sagrada de 5 etapas:
+1. "Abertura e Relaxamento" (Preparação do corpo)
+2. "O Rezo e o Sopro" (Aplicação)
+3. "A Força Chegou" (Limpeza)
+4. "O Voo da Águia" (Miração)
+5. "A Volta para a Aldeia" (Integração)`}
 
-Use uma linguagem profundamente xamânica, conectada aos elementos. Incorpore cantos ou referências aos cantos da floresta em forma de texto poético. Use o português do Brasil.
+Use uma linguagem profundamente xamânica, conectada aos elementos. Incorpore cantos (escreva a letra e a tradução poética) e sons da floresta no texto. Use o português do Brasil.
 `;
 
 export const youtubeAgentPrompt = (theme: string, focus: string, language: 'pt' | 'en' = 'pt') => {
@@ -271,7 +314,7 @@ Você deve gerar um PROMPT DE IMAGEM para o modelo 'Imagen 4 Ultra'.
 **SUA MISSÃO:**
 Crie uma descrição de imagem (prompt) que resulte em uma Thumbnail de Alto Impacto.
 
-**REGRAS OBRIGATÓRIAS PARA O PROMPT:**
+**REGRAS OBRIGATÓAS PARA O PROMPT:**
 1. **Texto na Imagem:** Você DEVE incluir o comando para renderizar o texto do título na imagem.
    - Sintaxe obrigatória: **text saying "${title}"**
    - O texto deve ser IDÊNTICO ao título fornecido acima.
