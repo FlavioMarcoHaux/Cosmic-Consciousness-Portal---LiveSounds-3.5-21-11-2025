@@ -84,8 +84,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
             if (newState === 'idle') {
                 audioElRef.current.pause();
                 audioElRef.current.currentTime = 0;
+                // Important: For blob mode, idle resets time.
+                setSavedTime(0);
+                setCurrentTime(0);
             } else if (newState === 'paused') {
                 audioElRef.current.pause();
+                // Important: Save time for resume
+                setSavedTime(audioElRef.current.currentTime);
+                setCurrentTime(audioElRef.current.currentTime);
             }
         }
         
@@ -94,13 +100,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
             rafRef.current = null;
         }
 
-        if (newState === 'paused') {
-            setSavedTime(currentTimeRef.current); 
-        } else {
-            setSavedTime(0);
-            setCurrentTime(0);
-            currentTimeRef.current = 0;
-            if (!audioBlob) setTrackDuration(0); // Only reset duration if not in blob mode (blob duration is fixed)
+        if (newState === 'idle' && !audioBlob) {
+             setSavedTime(0);
+             setCurrentTime(0);
+             currentTimeRef.current = 0;
+             setTrackDuration(0);
         }
 
         setPlaybackState(newState);
@@ -122,6 +126,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
 
     // Reset on playlist/blob change
     useEffect(() => {
+        // Only stop if the content *actually* changed significantly
         stopPlayback();
         audioBuffersRef.current = {};
         activeFetchesRef.current = {};
@@ -135,6 +140,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
         if (audioBlob && audioElRef.current) {
             const url = URL.createObjectURL(audioBlob);
             audioElRef.current.src = url;
+            audioElRef.current.load(); // Force load
             
             // Ensure AudioContext exists for visualization/routing if needed
             if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
@@ -142,7 +148,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
             }
 
             // Setup MediaElementSource if not exists
-            // Note: We only do this once per audio element to avoid errors
             if (!mediaSourceNodeRef.current && audioContextRef.current) {
                 try {
                     mediaSourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioElRef.current);
@@ -151,6 +156,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
                     console.warn("MediaElementSource creation failed (likely already connected):", e);
                 }
             }
+            
+            // Listen for metadata to set duration
+            audioElRef.current.onloadedmetadata = () => {
+                if (audioElRef.current) setTrackDuration(audioElRef.current.duration);
+            };
 
             return () => {
                 URL.revokeObjectURL(url);
@@ -163,9 +173,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
         if (playbackState === 'playing') {
             if (audioBlob && audioElRef.current) {
                 // Blob Mode Time
-                setCurrentTime(audioElRef.current.currentTime);
-                currentTimeRef.current = audioElRef.current.currentTime;
-                setTrackDuration(audioElRef.current.duration || 0);
+                const t = audioElRef.current.currentTime;
+                setCurrentTime(t);
+                currentTimeRef.current = t;
+                // Update duration in case it wasn't ready
+                if (!trackDuration && audioElRef.current.duration) setTrackDuration(audioElRef.current.duration);
             } else if (audioContextRef.current) {
                 // Buffer Mode Time
                 const now = audioContextRef.current.currentTime;
@@ -265,17 +277,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
             
             setPlaybackState('playing');
             setCurrentTrackIndex(0); // Blob is always track 0 conceptually
-            audioElRef.current.currentTime = startOffset;
+            
+            // Always respect the offset if provided, otherwise rely on element's current time if resuming
+            if (typeof startOffset === 'number') {
+                audioElRef.current.currentTime = startOffset;
+            }
+            
             audioElRef.current.play().catch(e => console.error("Play failed", e));
             
             // Setup handlers
             audioElRef.current.onended = () => stopPlayback('idle');
-            audioElRef.current.onpause = () => {
-                 // Only sync state if not initiated by our stopPlayback
-                 if (isMountedRef.current) {
-                     // We can double check
-                 }
-            };
+            
             return;
         }
 
@@ -339,9 +351,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
         if (playbackState === 'playing') {
             stopPlayback('paused');
         } else if (playbackState === 'paused') {
-            // If blob mode, savedTime is managed by element usually, but we can force it
-            playTrack(currentTrackIndex !== null ? currentTrackIndex : 0, true, savedTime);
+            // Resume logic
+            if (audioBlob && audioElRef.current) {
+                // For blob, just call play, element handles time
+                playTrack(0, true, audioElRef.current.currentTime); 
+            } else {
+                // For buffer, use savedTime
+                playTrack(currentTrackIndex !== null ? currentTrackIndex : 0, true, savedTime);
+            }
         } else {
+            // Start from scratch
             playTrack(0, true, 0);
         }
     };
@@ -433,19 +452,19 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
     return (
         <div className="w-full space-y-4">
             {/* Hidden Audio Element for Blob Mode */}
-            <audio ref={audioElRef} className="hidden" />
+            <audio ref={audioElRef} className="hidden" preload="auto" />
 
             <button
                 onClick={handleMasterPlay}
                 disabled={playlist.length === 0} 
-                className="w-full flex items-center justify-center space-x-3 px-4 py-3 bg-indigo-600/50 text-indigo-100 text-lg rounded-xl hover:bg-indigo-600/80 transition-colors disabled:opacity-60 shadow-lg shadow-indigo-900/20"
+                className="w-full flex items-center justify-center space-x-3 px-4 py-3 bg-indigo-600/80 text-indigo-100 text-lg rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-60 shadow-lg shadow-indigo-900/40 backdrop-blur-md border border-indigo-400/30"
             >
                 {playbackState === 'playing' ? (
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
                 )}
-                <span>
+                <span className="font-bold tracking-wide">
                     {playbackState === 'playing' ? 'Pausar Sessão' : playbackState === 'paused' ? 'Continuar Sessão' : 'Iniciar Sessão'}
                 </span>
             </button>

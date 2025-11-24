@@ -159,7 +159,6 @@ export const chunkText = (text: string, maxLength = 600): string[] => {
 export class OPFSWavBuilder {
     private fileHandle: FileSystemFileHandle | null = null;
     private writable: FileSystemWritableFileStream | null = null;
-    private totalBytesWritten = 0;
     private sampleRate = 24000;
     private numChannels = 1;
     private fileName: string;
@@ -172,43 +171,51 @@ export class OPFSWavBuilder {
         try {
             const root = await navigator.storage.getDirectory();
             this.fileHandle = await root.getFileHandle(this.fileName, { create: true });
-            // @ts-ignore - createWritable exists in modern browsers but types might lag
+            // @ts-ignore 
             this.writable = await this.fileHandle.createWritable();
             
-            // Reserve space for header (44 bytes)
-            // We write dummy data first, will overwrite later.
+            // Reserve space for header (44 bytes) with dummy data
             const dummyHeader = new Uint8Array(44);
             await this.writable?.write(dummyHeader);
-            this.totalBytesWritten = 0; // Start counting DATA bytes
         } catch (e) {
-            console.error("OPFS Init failed, fallback needed:", e);
+            console.error("OPFS Init failed:", e);
             throw e;
         }
     }
 
     async appendChunk(audioData: Uint8Array) {
         if (!this.writable) return;
-        
-        // Gemini sends raw 16-bit PCM (Little Endian) inside the base64.
-        // We just need to write these bytes directly.
-        // If using decode() from this file, it returns Uint8Array which is exactly what we need.
+        // Write raw PCM bytes directly to stream
         await this.writable.write(audioData);
-        this.totalBytesWritten += audioData.byteLength;
     }
 
     async finalize(): Promise<Blob> {
         if (!this.writable || !this.fileHandle) throw new Error("Not initialized");
 
-        // 1. Create Header
+        // 1. Close the stream to ensure all data chunks are flushed to disk.
+        await this.writable.close();
+
+        // 2. Get the actual file size from the file system to be 100% accurate.
+        const file = await this.fileHandle.getFile();
+        const totalFileSize = file.size;
+        const dataSize = totalFileSize - 44; // Subtract header space
+
+        if (dataSize < 0) throw new Error("File too small / invalid");
+
+        // 3. Re-open writable stream to update the header.
+        // We must use keepExistingData: true to not wipe the audio we just wrote.
+        // @ts-ignore
+        this.writable = await this.fileHandle.createWritable({ keepExistingData: true });
+
+        // 4. Create Correct Header
         const header = new ArrayBuffer(44);
         const view = new DataView(header);
-        const length = this.totalBytesWritten + 44;
 
         const setUint16 = (pos: number, data: number) => { view.setUint16(pos, data, true); };
         const setUint32 = (pos: number, data: number) => { view.setUint32(pos, data, true); };
 
         setUint32(0, 0x46464952); // "RIFF"
-        setUint32(4, length - 8); // file length - 8
+        setUint32(4, totalFileSize - 8); // File size - 8
         setUint32(8, 0x45564157); // "WAVE"
 
         setUint32(12, 0x20746d66); // "fmt "
@@ -221,20 +228,17 @@ export class OPFSWavBuilder {
         setUint16(34, 16); // 16-bit
 
         setUint32(36, 0x61746164); // "data"
-        setUint32(40, this.totalBytesWritten);
+        setUint32(40, dataSize); // Actual data size
 
-        // 2. Overwrite Header at position 0
-        // Close stream first? No, we can seek if using SyncAccessHandle, but for createWritable we usually write sequentially.
-        // Standard FileSystemWritableFileStream supports seek.
+        // 5. Write Header at position 0
         await this.writable.seek(0);
         await this.writable.write(header);
         
-        // 3. Close
+        // 6. Close final
         await this.writable.close();
 
-        // 4. Return Blob
-        const file = await this.fileHandle.getFile();
-        return file;
+        // 7. Return the final, corrected Blob
+        return await this.fileHandle.getFile();
     }
     
     async cleanup() {

@@ -91,7 +91,7 @@ const App: React.FC = () => {
                     {/* 
                         LAYOUT LOGIC:
                         If Home: Header + Content share the scroll container (Header scrolls away).
-                        If Room: Header is Fixed (Top), Content Scrolls independently.
+                        If Room: Cinema Mode (Full Screen, Fixed, No Global Header).
                     */}
 
                     {currentView === 'home' ? (
@@ -112,21 +112,16 @@ const App: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        // Room Layout: Fixed Header, Scrollable Content
-                        <>
-                            <div className="w-full max-w-4xl mx-auto z-20 flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-0">
-                                {HeaderComponent}
-                            </div>
-                            <div className="w-full max-w-4xl mx-auto flex flex-col h-full flex-grow z-10 mt-4 min-h-0 p-4 sm:p-6 lg:p-8 pt-0">
-                                {renderRoom()}
-                            </div>
-                        </>
+                        // Room Layout: Cinema Mode (Full Screen)
+                        <div className="fixed inset-0 z-10 w-full h-full bg-[#0a0a1a]">
+                            {renderRoom()}
+                        </div>
                     )}
                     
                      <ProactiveSuggestion />
                      <CoherenceAgent />
                      
-                    <footer className="absolute bottom-0 w-full text-center p-2 text-[10px] text-indigo-400/20 pointer-events-none z-0">
+                    <footer className={`absolute bottom-0 w-full text-center p-2 text-[10px] text-indigo-400/20 pointer-events-none z-0 ${currentView !== 'home' ? 'hidden' : ''}`}>
                         <p>Consciousness Portal v8.0 - The Cosmic Mixer</p>
                     </footer>
                 </div>

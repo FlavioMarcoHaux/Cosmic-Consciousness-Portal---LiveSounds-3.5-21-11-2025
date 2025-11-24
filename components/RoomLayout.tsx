@@ -34,7 +34,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
     const theme = getThemeColors();
 
     return (
-        <div className={`relative flex flex-col h-full w-full items-center ${backgroundClass} overflow-hidden rounded-xl border-2 ${theme.border} shadow-2xl`}>
+        <div className={`relative flex flex-col h-full w-full items-center ${backgroundClass} overflow-hidden`}>
             
             {/* Header Navigation Bar - Fixed at top */}
             <div className="w-full flex items-center justify-between px-4 py-3 sm:py-4 z-30 relative flex-shrink-0 bg-inherit/90 backdrop-blur-sm border-b border-white/5">
