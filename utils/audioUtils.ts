@@ -110,6 +110,19 @@ export function audioBufferToWav(buffer: AudioBuffer): Blob {
     return new Blob([bufferArray], { type: "audio/wav" });
 }
 
+// Helper to clean text for TTS (Remove metadata like [GANCHO], (Voz suave), ### Title)
+export const cleanTextForTTS = (text: string): string => {
+    if (!text) return "";
+    return text
+        .replace(/\[.*?\]/g, '') // Remove [Metadata]
+        .replace(/\(.*?\)/g, '') // Remove (Instructions, e.g., loop instructions)
+        .replace(/\*\*.*?\*\*/g, '') // Remove **Bold instructions** if they appear isolated
+        .replace(/[#*]/g, '')    // Remove Markdown chars like # or *
+        .replace(/início do loop.*?parágrafos/gi, '') // Specific safeguard for the known leak
+        .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
+        .trim();
+};
+
 // Helper to chunk text smartly for TTS
 export const chunkText = (text: string, maxLength = 600): string[] => {
     if (!text || typeof text !== 'string') return [""];

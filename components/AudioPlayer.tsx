@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { getTextToSpeech } from '../services/geminiService';
-import { decode, decodeAudioData, audioBufferToWav, chunkText } from '../utils/audioUtils';
+import { decode, decodeAudioData, audioBufferToWav, chunkText, cleanTextForTTS } from '../utils/audioUtils';
 import { PlaylistItem } from '../types';
 
 interface AudioPlayerProps {
@@ -220,7 +220,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ playlist, audioBlob }) => {
             setError(null);
             
             try {
-                const textChunks = chunkText(textToProcess);
+                // CLEAN TEXT HERE for Playlist Mode
+                const cleanedText = cleanTextForTTS(textToProcess);
+                const textChunks = chunkText(cleanedText);
+                
                 if (textChunks.length === 0) throw new Error("Texto vazio.");
 
                 const audioDataChunks: Uint8Array[] = [];

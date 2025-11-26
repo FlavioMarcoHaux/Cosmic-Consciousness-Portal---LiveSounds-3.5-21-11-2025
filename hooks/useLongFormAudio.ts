@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { OPFSWavBuilder, decode, chunkText } from '../utils/audioUtils';
+import { OPFSWavBuilder, decode, chunkText, cleanTextForTTS } from '../utils/audioUtils';
 import { getTextToSpeech } from '../services/geminiService';
 
 export const useLongFormAudio = () => {
@@ -19,7 +19,10 @@ export const useLongFormAudio = () => {
         abortControllerRef.current = new AbortController();
 
         try {
-            const chunks = chunkText(text);
+            // CLEAN THE TEXT BEFORE CHUNKING
+            const cleanedText = cleanTextForTTS(text);
+            
+            const chunks = chunkText(cleanedText);
             if (chunks.length === 0) {
                 throw new Error("Texto vazio.");
             }

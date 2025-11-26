@@ -315,7 +315,8 @@ export const getTextToSpeech = async (text: string): Promise<string | null> => {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        // Utilizando 'Aoede' (Roberta Erickson) como voz principal conforme solicitado
+                        prebuiltVoiceConfig: { voiceName: 'Aoede' },
                     },
                 },
             },
