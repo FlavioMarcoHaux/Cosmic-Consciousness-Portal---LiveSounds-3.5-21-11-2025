@@ -340,7 +340,14 @@ Gere JSON: "mantra", "meditation".
 - Texto limpo para fala.
 `;
 
-export const medicineRitualPrompt = (medicineName: string, medicineProperty: string, duration: number, intention?: string) => `
+export const medicineRitualPrompt = (medicineName: string, medicineProperty: string, duration: number, intention?: string) => {
+    // Lógica de Intensidade do Sopro baseada no tipo de medicina
+    const isStrong = ['Tsunu', 'Veia de Pajé', 'Pajé', 'Jurema Preta', 'Caneleiro', 'Samaúma', 'Encanto', 'Paricá'].some(n => medicineName.includes(n));
+    const blowInstruction = isStrong
+        ? "O sopro deve ser FIRME, CURTO e FORTE (O Sopro do Guerreiro)."
+        : "O sopro deve ser LONGO, SUAVE e PROFUNDO (O Sopro da Jiboia).";
+
+    return `
 ${FOREST_SPIRIT_INSTRUCTION}
 CERIMÔNIA DA FLORESTA: Consagração de **${medicineName}** (${medicineProperty}).
 ${intention ? `O rezo do coração é: "${intention}".` : ''}
@@ -348,14 +355,21 @@ ${intention ? `O rezo do coração é: "${intention}".` : ''}
 ${getMeditationLengthInstruction(duration)}
 Gere Array JSON { "title", "text" }.
 
-INSTRUÇÕES:
-- Você está na floresta, ao redor da fogueira sagrada.
-- Invoque a força da medicina. Fale sobre a cura que vem da terra e dos espíritos das plantas.
-- Se for "Tsunu" ou medicinas de força, foque no aterramento, na limpeza e na firmeza.
-- Se for "Cumaru", "Menta" ou medicinas de ar, foque na visão, na leveza e na expansão.
-- Guie a "Força" (o efeito da medicina) com firmeza de pai e amor de mãe. Diga ao guerreiro para respirar e aguentar firme.
-- Texto limpo para fala.
+--- RITUALÍSTICA DE APLICAÇÃO OBRIGATÓRIA (INÍCIO DO ÁUDIO) ---
+Você NÃO deve começar a viagem espiritual imediatamente. Primeiro, você deve guiar o ato físico da consagração AGORA.
+Siga esta ordem exata no início do texto:
+
+1. A PREPARAÇÃO: Ordene que o guerreiro coloque a medicina na mão, intencione o rezo e coloque no Kuripe (auto-aplicador). Dê tempo.
+2. A RESPIRAÇÃO: Guie uma inspiração profunda para conectar com o espírito de ${medicineName}.
+3. O COMANDO DE FOGO: Dê o sinal claro para o sopro. Diga: "Prepare-se... Inspire... e SOPRA! HAUX!".
+   * ${blowInstruction}
+4. A BORRACHEIRA (O IMPACTO): Imediatamente após o sopro, descreva a sensação física. A ardência, os olhos lacrimejando, a nuca relaxando, a limpeza acontecendo. Valide a força inicial. Diga para aguentar firme e respirar pela boca.
+
+--- A JORNADA (APÓS A APLICAÇÃO) ---
+Somente após passar pela força física inicial, guie a miração espiritual e a conexão profunda com ${medicineProperty}.
+O texto deve ser limpo para fala.
 `;
+};
 
 export const coherenceSimulatorPrompt = (scenario: string) => `
 ${PSYCHE_ALCHEMIST_INSTRUCTION}
