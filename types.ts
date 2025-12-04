@@ -95,6 +95,8 @@ export interface Medicine {
     name: string;
     description: string;
     property: string; // e.g., "Aterramento Profundo", "Visão Astral"
+    animal: string; // New: Power Animal association
+    animalTrait: string; // New: The specific quality the animal brings
 }
 
 // --- Marketing Agent Types ---

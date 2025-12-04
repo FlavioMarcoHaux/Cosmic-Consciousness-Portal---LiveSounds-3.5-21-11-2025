@@ -114,61 +114,109 @@ export function audioBufferToWav(buffer: AudioBuffer): Blob {
 export const cleanTextForTTS = (text: string): string => {
     if (!text) return "";
     return text
-        .replace(/\[.*?\]/g, '') // Remove [Metadata]
-        .replace(/\(.*?\)/g, '') // Remove (Instructions, e.g., loop instructions)
-        .replace(/\*\*.*?\*\*/g, '') // Remove **Bold instructions** if they appear isolated
-        .replace(/[#*]/g, '')    // Remove Markdown chars like # or *
-        .replace(/início do loop.*?parágrafos/gi, '') // Specific safeguard for the known leak
-        .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
+        .replace(/\[PAUSA:\s*\d+\]/gi, '') // Remove pause tags
+        .replace(/\[.*?\]/g, '') // Remove other Metadata
+        .replace(/\(.*?\)/g, '') // Remove (Instructions)
+        .replace(/#{1,6}\s?/g, '') // Remove Markdown Headers (###)
+        .replace(/\*\*/g, '') // Remove Bold
+        .replace(/\*/g, '')    // Remove Italics
+        .replace(/^\s*-\s/gm, '') // Remove list bullets
+        .replace(/\s{2,}/g, ' ') // Collapse spaces
         .trim();
 };
 
-// Helper to chunk text smartly for TTS
-export const chunkText = (text: string, maxLength = 600): string[] => {
-    if (!text || typeof text !== 'string') return [""];
+// --- SILENCE BLOCK GENERATOR ---
+export const createSilencePCM = (seconds: number, sampleRate: number = 24000): Uint8Array => {
+    const numSamples = Math.floor(seconds * sampleRate);
+    const numBytes = numSamples * 2; // 16-bit = 2 bytes per sample
+    return new Uint8Array(numBytes); // Initialized to 0 by default (Silence)
+};
 
-    const sentences = text.match(/[^.!?\n]+[.!?\n]+(\s|$)|[^.!?\n]+$/g);
+// --- SCRIPT PARSER (BLOCKS) ---
+export type AudioBlock = { type: 'text', content: string } | { type: 'pause', duration: number };
+
+export const parseScriptToBlocks = (fullText: string): AudioBlock[] => {
+    const blocks: AudioBlock[] = [];
+    const parts = fullText.split(/\[PAUSA:\s*(\d+)\]/i);
     
-    if (!sentences) return [text];
-
-    const chunks: string[] = [];
-    let currentChunk = '';
-
-    for (const s of sentences) {
-        const sentence = s; 
-
-        if ((currentChunk + sentence).length > maxLength) {
-            if (currentChunk.trim()) {
-                chunks.push(currentChunk.trim());
-                currentChunk = '';
-            }
-
-            if (sentence.length > maxLength) {
-                const subChunks = sentence.match(new RegExp(`.{1,${maxLength}}`, 'g')) || [sentence];
-                subChunks.forEach((sub, index) => {
-                    if (index === subChunks.length - 1) {
-                        currentChunk = sub;
-                    } else {
-                        chunks.push(sub.trim());
-                    }
-                });
-            } else {
-                currentChunk = sentence;
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (i % 2 === 0) {
+            // Text
+            if (part.trim().length > 0) {
+                blocks.push({ type: 'text', content: part });
             }
         } else {
-            currentChunk += sentence;
+            // Pause Duration
+            const duration = parseInt(part, 10);
+            if (!isNaN(duration) && duration > 0) {
+                blocks.push({ type: 'pause', duration: duration });
+            }
+        }
+    }
+    return blocks;
+};
+
+// --- OPTIMIZED SEMANTIC CHUNKER ---
+// Splits text into small, coherent blocks for fast TTS generation without context loss.
+export const chunkText = (text: string, maxLength = 450): string[] => {
+    if (!text || typeof text !== 'string') return [""];
+
+    const finalChunks: string[] = [];
+    
+    // 1. First split by Double Newlines (Paragraphs/Sections)
+    // This preserves the structure of "Chapters" in the meditation.
+    const paragraphs = text.split(/\n\s*\n/);
+
+    for (const paragraph of paragraphs) {
+        const cleanPara = paragraph.trim();
+        if (!cleanPara) continue;
+
+        if (cleanPara.length <= maxLength) {
+            finalChunks.push(cleanPara);
+        } else {
+            // 2. If Paragraph is too long, split by Sentence Terminators
+            // Look for . ! ? followed by space or end of string
+            const sentences = cleanPara.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g);
+            
+            if (!sentences) {
+                // Fallback if regex fails (rare)
+                finalChunks.push(cleanPara); 
+                continue;
+            }
+
+            let currentChunk = '';
+
+            for (const sentence of sentences) {
+                // 3. Accumulate sentences until limit
+                if ((currentChunk + sentence).length > maxLength) {
+                    if (currentChunk.trim()) {
+                        finalChunks.push(currentChunk.trim());
+                        currentChunk = '';
+                    }
+                    
+                    // 4. Handle Extremely Long Sentences (Emergency Split by comma/colon)
+                    if (sentence.length > maxLength) {
+                        const subChunks = sentence.match(new RegExp(`.{1,${maxLength}}`, 'g')) || [sentence];
+                        subChunks.forEach((sub) => finalChunks.push(sub.trim()));
+                    } else {
+                        currentChunk = sentence;
+                    }
+                } else {
+                    currentChunk += sentence;
+                }
+            }
+            
+            if (currentChunk.trim()) {
+                finalChunks.push(currentChunk.trim());
+            }
         }
     }
     
-    if (currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-    }
-    
-    return chunks;
+    return finalChunks;
 };
 
-// --- OPFS "Blade Runner" Implementation for Large Audio Files ---
-
+// --- OPFS IMPLEMENTATION ---
 export class OPFSWavBuilder {
     private fileHandle: FileSystemFileHandle | null = null;
     private writable: FileSystemWritableFileStream | null = null;
@@ -186,8 +234,6 @@ export class OPFSWavBuilder {
             this.fileHandle = await root.getFileHandle(this.fileName, { create: true });
             // @ts-ignore 
             this.writable = await this.fileHandle.createWritable();
-            
-            // Reserve space for header (44 bytes) with dummy data
             const dummyHeader = new Uint8Array(44);
             await this.writable?.write(dummyHeader);
         } catch (e) {
@@ -198,59 +244,47 @@ export class OPFSWavBuilder {
 
     async appendChunk(audioData: Uint8Array) {
         if (!this.writable) return;
-        // Write raw PCM bytes directly to stream
         await this.writable.write(audioData);
     }
 
     async finalize(): Promise<Blob> {
         if (!this.writable || !this.fileHandle) throw new Error("Not initialized");
 
-        // 1. Close the stream to ensure all data chunks are flushed to disk.
         await this.writable.close();
 
-        // 2. Get the actual file size from the file system to be 100% accurate.
         const file = await this.fileHandle.getFile();
         const totalFileSize = file.size;
-        const dataSize = totalFileSize - 44; // Subtract header space
+        const dataSize = totalFileSize - 44;
 
-        if (dataSize < 0) throw new Error("File too small / invalid");
+        if (dataSize < 0) throw new Error("File too small");
 
-        // 3. Re-open writable stream to update the header.
-        // We must use keepExistingData: true to not wipe the audio we just wrote.
         // @ts-ignore
         this.writable = await this.fileHandle.createWritable({ keepExistingData: true });
 
-        // 4. Create Correct Header
         const header = new ArrayBuffer(44);
         const view = new DataView(header);
 
         const setUint16 = (pos: number, data: number) => { view.setUint16(pos, data, true); };
         const setUint32 = (pos: number, data: number) => { view.setUint32(pos, data, true); };
 
-        setUint32(0, 0x46464952); // "RIFF"
-        setUint32(4, totalFileSize - 8); // File size - 8
-        setUint32(8, 0x45564157); // "WAVE"
-
-        setUint32(12, 0x20746d66); // "fmt "
-        setUint32(16, 16); // length = 16
-        setUint16(20, 1); // PCM
+        setUint32(0, 0x46464952); // RIFF
+        setUint32(4, totalFileSize - 8); 
+        setUint32(8, 0x45564157); // WAVE
+        setUint32(12, 0x20746d66); // fmt
+        setUint32(16, 16); 
+        setUint16(20, 1); 
         setUint16(22, this.numChannels);
         setUint32(24, this.sampleRate);
-        setUint32(28, this.sampleRate * 2 * this.numChannels); // avg bytes/sec
-        setUint16(32, this.numChannels * 2); // block align
-        setUint16(34, 16); // 16-bit
+        setUint32(28, this.sampleRate * 2 * this.numChannels);
+        setUint16(32, this.numChannels * 2); 
+        setUint16(34, 16); 
+        setUint32(36, 0x61746164); // data
+        setUint32(40, dataSize); 
 
-        setUint32(36, 0x61746164); // "data"
-        setUint32(40, dataSize); // Actual data size
-
-        // 5. Write Header at position 0
         await this.writable.seek(0);
         await this.writable.write(header);
-        
-        // 6. Close final
         await this.writable.close();
 
-        // 7. Return the final, corrected Blob
         return await this.fileHandle.getFile();
     }
     

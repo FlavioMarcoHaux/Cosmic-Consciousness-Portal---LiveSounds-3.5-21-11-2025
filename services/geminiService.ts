@@ -218,12 +218,47 @@ export const getArchetypeActivation = async (cardName: string, duration: number)
     return generateJsonContent(Prompts.archetypeActivationPrompt(cardName, duration), schema, fallback);
 };
 
-export const getMedicineRitual = async (medicineName: string, medicineProperty: string, duration: number, intention?: string): Promise<PlaylistItem[]> => {
-    return getPlaylistContent(
-        Prompts.medicineRitualPrompt(medicineName, medicineProperty, duration, intention), 
-        "Floresta Silenciosa", 
-        "Os espíritos da floresta estão em silêncio momentâneo. Respire fundo, sinta a medicina e tente conectar-se novamente."
-    );
+export const getMedicineRitual = async (medicineName: string, medicineProperty: string, duration: number, intention?: string, animal?: string, animalTrait?: string): Promise<PlaylistItem[]> => {
+    const prompt = Prompts.medicineRitualPrompt(medicineName, medicineProperty, duration, intention, animal, animalTrait);
+    // CHANGE: Lowered threshold to 15 minutes to force dense text generation for medium sessions too
+    const isLongSession = duration >= 15;
+
+    if (isLongSession) {
+        // Schema especial para sessões longas (Quebra em capítulos densos)
+        const longSchema = {
+            type: Type.OBJECT,
+            properties: {
+                induction: { type: Type.STRING },
+                breath: { type: Type.STRING },
+                purge: { type: Type.STRING },
+                vision: { type: Type.STRING },
+                return: { type: Type.STRING },
+            },
+            required: ["induction", "breath", "purge", "vision", "return"],
+        };
+        
+        const fallback = { induction: "Erro...", breath: "Respire...", purge: "Limpeza...", vision: "Visão...", return: "Volte..." };
+        const result = await generateJsonContent(prompt, longSchema, fallback);
+        
+        // Transformar objeto em array de Playlist
+        if (result && result.induction) {
+            return [
+                { title: "I. Indução e Fracionamento", text: result.induction },
+                { title: "II. O Sopro Sagrado", text: result.breath },
+                { title: "III. A Peia (O Caos)", text: result.purge },
+                { title: "IV. O Voo da Águia", text: result.vision },
+                { title: "V. A Integração", text: result.return },
+            ];
+        }
+        return [{ title: "Falha na Matriz", text: "Os espíritos pedem silêncio. Tente novamente." }];
+    } else {
+        // Schema padrão para sessões curtas (5-10 min)
+        return getPlaylistContent(
+            prompt, 
+            "Floresta Silenciosa", 
+            "Os espíritos da floresta estão em silêncio momentâneo. Respire fundo, sinta a medicina e tente conectar-se novamente."
+        );
+    }
 };
 
 // --- Synchronicity ---

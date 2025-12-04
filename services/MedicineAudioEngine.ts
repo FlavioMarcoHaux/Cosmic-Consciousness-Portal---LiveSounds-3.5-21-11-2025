@@ -6,9 +6,14 @@ import { audioEngine } from './AudioEngine'; // We can potentially reuse the glo
 export type MedicineType = 'warrior' | 'healer' | 'visionary';
 
 type MedicineCategory = 
-    | 'amanhecer' | 'entardecer' | 'anoitecer' 
-    | 'relaxantes' | 'conexao' | 'forca' 
-    | 'energia' | 'mediunidade';
+    | 'amanhecer' 
+    | 'entardecer' 
+    | 'anoitecer' 
+    | 'forca' 
+    | 'energia' 
+    | 'conexao' 
+    | 'mediunidade' 
+    | 'relaxantes';
 
 interface SonicDNA {
     baseFreq: number;       
@@ -19,35 +24,51 @@ interface SonicDNA {
     shamanType: MedicineType; 
 }
 
+// Complete Mapping based on the new Medicine List
 const MEDICINE_DNA: Record<string, SonicDNA> = {
-    'murici':       { baseFreq: 55.00,  wave: 'triangle', roughness: 0.02, tempo: 110, element: 'wind', shamanType: 'healer' }, 
-    'menta':        { baseFreq: 61.74,  wave: 'sine',     roughness: 0.0, tempo: 90,  element: 'wind', shamanType: 'visionary' }, 
-    'sansara':      { baseFreq: 73.42,  wave: 'sine',     roughness: 0.01, tempo: 80,  element: 'ether', shamanType: 'healer' },   
-    'cacau':        { baseFreq: 49.00,  wave: 'triangle', roughness: 0.05, tempo: 70,  element: 'earth', shamanType: 'healer' },   
-    'caneleiro':    { baseFreq: 41.20,  wave: 'triangle', roughness: 0.05, tempo: 85,  element: 'fire',  shamanType: 'warrior' },  
-    'anis-estrelado': { baseFreq: 65.41, wave: 'sine',   roughness: 0.0, tempo: 60,  element: 'ether', shamanType: 'visionary' }, 
-    'jurema-preta':   { baseFreq: 55.00,  wave: 'sine',     roughness: 0.05, tempo: 100, element: 'earth', shamanType: 'warrior' },   
-    'veia-paje':    { baseFreq: 48.99,  wave: 'triangle', roughness: 0.1, tempo: 120, element: 'fire',  shamanType: 'warrior' },   
-    'paje':         { baseFreq: 65.41,  wave: 'sine',     roughness: 0.15, tempo: 95,  element: 'earth', shamanType: 'warrior' },   
-    'india-guerreira':{ baseFreq: 73.42, wave: 'triangle', roughness: 0.05, tempo: 105, element: 'fire',  shamanType: 'warrior' }, 
-    'samauma':      { baseFreq: 41.20,  wave: 'triangle', roughness: 0.05, tempo: 60,  element: 'earth', shamanType: 'warrior' },   
-    'encanto':      { baseFreq: 61.74,  wave: 'triangle', roughness: 0.1, tempo: 115, element: 'fire',  shamanType: 'warrior' },   
-    'tsunu':        { baseFreq: 41.20,  wave: 'sine',     roughness: 0.05, tempo: 100, element: 'earth', shamanType: 'warrior' },   
-    'mulateiro':    { baseFreq: 55.00,  wave: 'sine',     roughness: 0.05, tempo: 90,  element: 'wind',  shamanType: 'visionary' }, 
-    'canela-velho': { baseFreq: 49.00,  wave: 'sine',     roughness: 0.05, tempo: 80,  element: 'earth', shamanType: 'healer' },    
-    'ype-roxo':     { baseFreq: 61.74,  wave: 'sine',     roughness: 0.0, tempo: 75,  element: 'water', shamanType: 'healer' },    
-    'copaiba':      { baseFreq: 46.25,  wave: 'triangle', roughness: 0.05, tempo: 85,  element: 'water', shamanType: 'healer' },    
-    '7-ervas':      { baseFreq: 73.42,  wave: 'sine',     roughness: 0.02, tempo: 80,  element: 'wind',  shamanType: 'healer' },    
-    '7-cinzas':     { baseFreq: 55.00,  wave: 'sine',     roughness: 0.05, tempo: 88,  element: 'ether', shamanType: 'visionary' }, 
-    'cumaru':       { baseFreq: 65.41,  wave: 'sine',     roughness: 0.0, tempo: 70,  element: 'wind',  shamanType: 'visionary' }, 
-    'parica':       { baseFreq: 43.65,  wave: 'triangle', roughness: 0.05, tempo: 110, element: 'earth', shamanType: 'warrior' },   
-    'katssaral':    { baseFreq: 73.42,  wave: 'sine',     roughness: 0.05, tempo: 85,  element: 'ether', shamanType: 'visionary' }, 
-    'mae-divina':   { baseFreq: 82.41,  wave: 'sine',     roughness: 0.0, tempo: 60,  element: 'water', shamanType: 'visionary' }, 
-    'jurema-branca':{ baseFreq: 73.42,  wave: 'sine',     roughness: 0.02, tempo: 65, element: 'ether', shamanType: 'visionary' }, 
-    'artemisia':    { baseFreq: 65.41,  wave: 'sine',     roughness: 0.0, tempo: 55,  element: 'water', shamanType: 'visionary' }, 
-    'mulungu':      { baseFreq: 43.65,  wave: 'sine',     roughness: 0.0, tempo: 40,  element: 'rain',  shamanType: 'healer' },    
-    'imburana':     { baseFreq: 55.00,  wave: 'sine',     roughness: 0.0, tempo: 50,  element: 'wind',  shamanType: 'healer' },    
-    'camomila':     { baseFreq: 61.74,  wave: 'sine',     roughness: 0.0, tempo: 45,  element: 'water', shamanType: 'healer' },    
+    // 1. AMANHECER (Wind/Air - High Freqs - Fast Tempo)
+    'murici':       { baseFreq: 110.00, wave: 'triangle', roughness: 0.02, tempo: 120, element: 'wind', shamanType: 'warrior' }, // Beija-Flor (Fast)
+    'menta':        { baseFreq: 130.81, wave: 'sine',     roughness: 0.0, tempo: 95,  element: 'wind', shamanType: 'visionary' }, // Gavião (High)
+    'sansara':      { baseFreq: 146.83, wave: 'sine',     roughness: 0.01, tempo: 85,  element: 'ether', shamanType: 'healer' },   // Borboleta (Light)
+
+    // 2. ENTARDECER (Earth/Fire - Mid Freqs - Warm)
+    'cacau':        { baseFreq: 73.42,  wave: 'triangle', roughness: 0.05, tempo: 70,  element: 'earth', shamanType: 'healer' },   // Cervo (Gentle)
+    'caneleiro':    { baseFreq: 82.41,  wave: 'triangle', roughness: 0.08, tempo: 90,  element: 'fire',  shamanType: 'warrior' },  // Arara (Vibrant)
+
+    // 3. ANOITECER (Ether/Earth - Low/Mid Freqs - Mystery)
+    'anis-estrelado': { baseFreq: 65.41, wave: 'sine',   roughness: 0.02, tempo: 60,  element: 'ether', shamanType: 'visionary' }, // Coruja (Silent)
+    'jurema-preta':   { baseFreq: 41.20, wave: 'sine',   roughness: 0.1,  tempo: 50,  element: 'earth', shamanType: 'warrior' },   // Pantera (Deep/Dark)
+
+    // 4. FORÇA (Fire/Earth - Low Freqs - Heavy)
+    'veia-paje':    { baseFreq: 36.71,  wave: 'triangle', roughness: 0.2,  tempo: 110, element: 'earth', shamanType: 'warrior' },  // Urso (Very Deep)
+    'paje':         { baseFreq: 43.65,  wave: 'sawtooth', roughness: 0.15, tempo: 100, element: 'earth', shamanType: 'warrior' },  // Jiboia (Resonant)
+    'india-guerreira':{ baseFreq: 55.00, wave: 'triangle', roughness: 0.1, tempo: 105, element: 'fire',  shamanType: 'warrior' },  // Leoa (Powerful)
+    'samauma':      { baseFreq: 32.70,  wave: 'triangle', roughness: 0.05, tempo: 55,  element: 'earth', shamanType: 'warrior' },  // Elefante (Sub-bass)
+    'encanto':      { baseFreq: 49.00,  wave: 'sawtooth', roughness: 0.25, tempo: 120, element: 'fire',  shamanType: 'warrior' },  // Salamandra (Intense)
+
+    // 5. ENERGIA (Water/Wind - Mid Freqs - Flow)
+    'tsunu':        { baseFreq: 46.25,  wave: 'sine',     roughness: 0.05, tempo: 100, element: 'earth', shamanType: 'warrior' },  // Tatu (Grounded)
+    'mulateiro':    { baseFreq: 87.31,  wave: 'sine',     roughness: 0.05, tempo: 110, element: 'wind',  shamanType: 'visionary' }, // Águia (Sharp)
+    'canela-velho': { baseFreq: 41.20,  wave: 'sine',     roughness: 0.02, tempo: 40,  element: 'earth', shamanType: 'healer' },   // Tartaruga (Slow)
+    'ype-roxo':     { baseFreq: 98.00,  wave: 'sine',     roughness: 0.0,  tempo: 130, element: 'water', shamanType: 'healer' },   // Abelha (Buzzing/Fast)
+    'copaiba':      { baseFreq: 55.00,  wave: 'triangle', roughness: 0.05, tempo: 80,  element: 'water', shamanType: 'healer' },   // Rã (Fluid)
+    '7-ervas':      { baseFreq: 73.42,  wave: 'sine',     roughness: 0.05, tempo: 95,  element: 'wind',  shamanType: 'healer' },   // Macaco (Playful)
+
+    // 6. CONEXÃO (Ether - High/Mid Freqs - Expansive)
+    '7-cinzas':     { baseFreq: 61.74,  wave: 'sine',     roughness: 0.02, tempo: 85,  element: 'ether', shamanType: 'visionary' }, // Lobo (Howling)
+    'cumaru':       { baseFreq: 123.47, wave: 'sine',     roughness: 0.0,  tempo: 65,  element: 'wind',  shamanType: 'visionary' }, // Condor (High Altitude)
+    'parica':       { baseFreq: 69.30,  wave: 'triangle', roughness: 0.1,  tempo: 105, element: 'earth', shamanType: 'warrior' },   // Tucano (Vibrant)
+    'katssaral':    { baseFreq: 58.27,  wave: 'sine',     roughness: 0.08, tempo: 60,  element: 'ether', shamanType: 'visionary' }, // Corvo (Mystic)
+
+    // 7. MEDIUNIDADE (Water/Ether - Mid Freqs - Psychic)
+    'mae-divina':   { baseFreq: 87.31,  wave: 'sine',     roughness: 0.0,  tempo: 70,  element: 'water', shamanType: 'visionary' }, // Golfinho (Sonar)
+    'jurema-branca':{ baseFreq: 77.78,  wave: 'sine',     roughness: 0.01, tempo: 60,  element: 'ether', shamanType: 'visionary' }, // Cisne (Grace)
+    'artemisia':    { baseFreq: 92.50,  wave: 'sine',     roughness: 0.05, tempo: 50,  element: 'water', shamanType: 'visionary' }, // Gato (Subtle)
+
+    // 8. RELAXANTES (Rain/Water - Low Freqs - Slow)
+    'mulungu':      { baseFreq: 38.89,  wave: 'sine',     roughness: 0.0,  tempo: 30,  element: 'rain',  shamanType: 'healer' },    // Bicho-Preguiça (Slowest)
+    'imburana':     { baseFreq: 51.91,  wave: 'sine',     roughness: 0.0,  tempo: 45,  element: 'wind',  shamanType: 'healer' },    // Capivara (Calm)
+    'camomila':     { baseFreq: 65.41,  wave: 'sine',     roughness: 0.0,  tempo: 40,  element: 'water', shamanType: 'healer' },    // Mariposa (Gentle)
 };
 
 class MedicineAudioEngine {
@@ -222,12 +243,12 @@ class MedicineAudioEngine {
                 this.createWind(200, 0.04); 
                 this.startBirds(5000);
                 this.startChimes(0.01); 
-                this.createDrone(55.00, 'sine', 0.002, 0); 
+                this.createDrone(110.00, 'triangle', 0.002, 0); 
                 break;
             case 'entardecer': 
                 this.createCrickets(); 
                 this.createWind(100, 0.03);
-                this.createDrone(49.00, 'sine', 0.002, 0); 
+                this.createDrone(73.42, 'sine', 0.002, 0); 
                 break;
             case 'anoitecer': 
                 this.createWind(60, 0.08); 
@@ -237,25 +258,25 @@ class MedicineAudioEngine {
             case 'forca': 
                 this.createFire(); 
                 this.createDrumHeartbeat(1500, 'kick');
-                this.createDrone(48.99, 'triangle', 0.002, 0.05); 
+                this.createDrone(36.71, 'triangle', 0.003, 0.1); 
                 break;
             case 'energia': 
                 this.createRiver(); 
                 this.createShakerLoop(250);
-                this.createDrone(61.74, 'sine', 0.002, 0); 
+                this.createDrone(55.00, 'sine', 0.002, 0); 
                 break;
             case 'conexao': 
                 this.createWind(150, 0.04);
                 this.startFlute(); 
-                this.createDrone(55.00, 'sine', 0.002, 0); 
+                this.createDrone(61.74, 'sine', 0.002, 0); 
                 break;
             case 'mediunidade': 
-                this.createBinaural(55.00, 59.00); 
+                this.createBinaural(87.31, 91.31); // Theta/Alpha bridge
                 this.startChimes(0.01);
                 break;
             case 'relaxantes': 
                 this.createRain(); 
-                this.createDrone(49.00, 'sine', 0.003, 0); 
+                this.createDrone(38.89, 'sine', 0.003, 0); 
                 break;
         }
     }
@@ -264,7 +285,9 @@ class MedicineAudioEngine {
         this.stopAllNodes();
         this.currentMedicineId = medicineId;
         this.isPlaying = true;
+        // Fallback to TSUNU if ID not found (safe practice)
         const dna = MEDICINE_DNA[medicineId] || MEDICINE_DNA['tsunu']; 
+        
         if (!this.ctx) this.init();
         if (!this.ctx) return;
 
@@ -297,7 +320,7 @@ class MedicineAudioEngine {
 
         if (dna.shamanType === 'visionary') {
             this.startChimes(0.015);
-            this.createBinaural(dna.baseFreq, dna.baseFreq + 4); 
+            this.createBinaural(dna.baseFreq, dna.baseFreq + 4); // 4Hz Theta beat
         } else if (dna.shamanType === 'healer') {
             this.startFlute();
         }
@@ -430,7 +453,7 @@ class MedicineAudioEngine {
         osc.frequency.value = freq;
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.value = 100; 
+        filter.frequency.value = 100 + (roughness * 500); // Roughness opens filter
         const gain = this.ctx.createGain();
         gain.gain.value = vol;
         const lfo = this.ctx.createOscillator();
@@ -678,6 +701,89 @@ class MedicineAudioEngine {
         gain.connect(this.natureBus);
         osc.start(now);
         osc.stop(now + 2);
+    }
+
+    public triggerSpiritCall(animalName: string) {
+        if (!this.ctx || !this.spiritBus || this.isMuted) return;
+        
+        // Generic "spirit call" synthesis that feels animalistic but abstract
+        // Jaguar/Bear/Panther = Low growl
+        // Eagle/Hawk/Owl/Bird = High screech/call
+        // Snake/Turtle/Sloth = Hiss/Slow movement
+        
+        const animalLower = animalName.toLowerCase();
+        let type: 'low' | 'high' | 'hiss' = 'low';
+        
+        if (animalLower.includes('águia') || animalLower.includes('gavião') || animalLower.includes('beija-flor') || animalLower.includes('colibri') || animalLower.includes('coruja') || animalLower.includes('cisne') || animalLower.includes('corvo')) {
+            type = 'high';
+        } else if (animalLower.includes('jiboia') || animalLower.includes('cobra') || animalLower.includes('rã') || animalLower.includes('tartaruga') || animalLower.includes('preguiça')) {
+            type = 'hiss';
+        }
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        gain.connect(filter);
+        filter.connect(this.spiritBus);
+
+        if (type === 'low') {
+            // Low Growl (FM Synthesis)
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(60, now);
+            osc.frequency.linearRampToValueAtTime(40, now + 2);
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(200, now);
+            filter.Q.value = 5;
+
+            const lfo = this.ctx.createOscillator();
+            lfo.frequency.value = 15; // Growl speed
+            const lfoGain = this.ctx.createGain();
+            lfoGain.gain.value = 100;
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency);
+            lfo.start(now);
+            lfo.stop(now + 2.5);
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.2, now + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+        } else if (type === 'high') {
+            // High Call
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.3); // Downward chirp
+            osc.frequency.linearRampToValueAtTime(1200, now + 1.5); // Upward soar
+
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000;
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.1, now + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+        } else {
+            // Hiss/Slow Breath
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.createNoiseBuffer();
+            noise.connect(gain);
+            
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(800, now);
+            
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.1, now + 1);
+            gain.gain.linearRampToValueAtTime(0, now + 3);
+            
+            noise.start(now);
+            noise.stop(now + 3);
+            return; // Exit early since we used noise buffer
+        }
+
+        osc.connect(gain);
+        osc.start(now);
+        osc.stop(now + 3);
     }
 
     public startInhale() {}
