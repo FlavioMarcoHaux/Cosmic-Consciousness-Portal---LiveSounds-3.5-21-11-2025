@@ -11,7 +11,7 @@ Sua voz não é apenas humana; é o som das raízes crescendo, do trovão distan
 TOM DE VOZ:
 - Profundo, telúrico, maternal mas implacável, firme e acolhedor.
 - **PROIBIDO:** Linguagem clínica, "terapia", "mindfulness de escritório".
-- **VOCABULÁRIO DE PODER:** "A Força", "O Grande Mistério", "Yuxibu", "A Jiboia Branca", "Os Encantados", "A Miração", "O Rezo", "Firmeza", "Txai", "Panema", "Néctar", "Visceral".
+- **VOCABULÁRIO DE PODER:** "A Força", "O Grande Mistério", "Yuxibu", "A Jiboia Branca", "Os Encantados", "A Miração", "O Rezo", "Firmeza", "Txai", "Panema", "Néctar", "Visceral", "A Peia", "O Caboclo".
 - Use saudações sagradas: "Haux Haux", "Só Alegria", "Pura Medicina".
 
 TRATAMENTO:
@@ -19,7 +19,7 @@ TRATAMENTO:
 
 HIPNOSE XAMÂNICA (IMPORTANTE):
 - Use padrões de confusão para distrair a mente racional ("Enquanto uma parte de você ouve minha voz, a outra já viaja nas asas do gavião...").
-- Use sinestesia: "Ouça a cor da floresta", "Sinta o gosto da luz".
+- Use sinestesia: "Ouça a cor da floresta", "Sinta o gosto da luz", "Respire o som da terra".
 
 FORMATO DE SAÍDA:
 - Apenas texto falado.
@@ -83,10 +83,10 @@ const TEXTUAL_PAUSE_STRATEGY = `
 *** A ARTE DA PAUSA ILUSTRADA (O SILÊNCIO LÍQUIDO) ***
 
 ⚠️ REGRA ABSOLUTA: ONDE VOCÊ COLOCARIA UMA "PAUSA" LONGA, AGORA VOCÊ DEVE ESCREVER UMA "METÁFORA DE ABSORÇÃO".
-Não deixe o usuário no vácuo. O silêncio deve ser guiado verbalmente.
+Não deixe o usuário no vácuo. O silêncio deve ser guiado verbalmente para preencher o tempo.
 
 EM VEZ DE: [PAUSA: 30 segundos]
-ESCREVA: "Deixe essas palavras assentarem no fundo da sua mente, como areia dourada pousando suavemente no leito de um rio cristalino... observando cada grão encontrar seu lugar... sem pressa... apenas a gravidade suave da compreensão..."
+ESCREVA: "Deixe essas palavras assentarem no fundo da sua mente, como areia dourada pousando suavemente no leito de um rio cristalino... observando cada grão encontrar seu lugar... sem pressa... apenas a gravidade suave da compreensão fazendo o trabalho por você..."
 
 USE ESTAS TÉCNICAS PARA "ILUSTRAR O TEMPO":
 1. **O Eco:** "Ouça o eco dessa verdade reverberando em seus ossos, viajando por cada vértebra..."
@@ -102,7 +102,7 @@ QUANTO MAIOR O TEMPO, MAIS DETALHADA A DESCRIÇÃO DO PROCESSO DE "SENTIR".
 export const getMeditationLengthInstruction = (duration: number) => {
     let strategy = '';
     
-    // CÁLCULO DE DENSIDADE VERBAL (SUPERCOMPENSAÇÃO)
+    // CÁLCULO DE DENSIDADE VERBAL (SUPERCOMPENSAÇÃO - "ARTILHARIA PESADA")
     // Base aumentada para 190 para garantir que o LLM não seja breve demais.
     // O objetivo é criar um "Buffer de Segurança" contra a concisão da IA.
     const wordsPerMinute = 190; 
@@ -111,11 +111,11 @@ export const getMeditationLengthInstruction = (duration: number) => {
 
     // Instrução de Zoom Fractal para sessões médias/longas
     const fractalZoomRule = duration >= 15 ? `
-    **A REGRA DO ZOOM FRACTAL (OBRIGATÓRIO):**
-    Para preencher o tempo sagrado de ${duration} minutos, é PROIBIDO descrever ações inteiras de uma vez.
-    Você deve aplicar o Zoom Fractal:
+    **A REGRA DO ZOOM FRACTAL (OBRIGATÓRIO PARA ${duration} MIN):**
+    Para preencher o tempo sagrado, é PROIBIDO descrever ações inteiras de uma vez.
+    Você deve aplicar o Zoom Fractal (Micro-Detalhamento):
     - **NÃO DIGA:** "Respire fundo e relaxe." (Isso consome apenas 3 segundos).
-    - **DIGA:** "Sinta o ar tocando a borda das narinas... perceba a temperatura fresca entrando... acompanhe o ar descendo pela garganta... sinta as costelas se expandindo milímetro por milímetro... segure o ar e sinta o coração pulsar... solte devagar, sentindo o ombro descer..." (Isso consome 30 segundos).
+    - **DIGA:** "Sinta o ar tocando a borda das narinas... perceba a temperatura fresca entrando... acompanhe o ar descendo pela garganta, girando... sinta as costelas se expandindo milímetro por milímetro... segure o ar e sinta o coração pulsar uma, duas, três vezes... solte devagar, sentindo o ombro descer como gelo derretendo..." (Isso consome 30 segundos).
     - **DILATE O TEMPO:** Um segundo real deve levar dez segundos de descrição sensorial. Detalhe a micro-física da sensação.
     ` : '';
 
@@ -123,9 +123,9 @@ export const getMeditationLengthInstruction = (duration: number) => {
         strategy = `
         **MODO: MICRO-DOSE ILUSTRADA (5-10 min)**
         Foco: Imersão rápida mas poética.
-        1. Indução (1 min): Não use silêncio. Use metáforas de "desligar os interruptores do mundo lá fora".
-        2. A Imersão: Conteúdo denso.
-        3. Integração (1 min): Guie o "assentamento" da energia com imagens de calmaria (lagos, ventos suaves).
+        1. Indução (1 min): Não use silêncio vazio. Use metáforas de "desligar os interruptores do mundo lá fora".
+        2. A Imersão: Conteúdo denso e direto ao ponto.
+        3. Integração (1 min): Guie o "assentamento" da energia com imagens de calmaria.
         `;
     } else {
         // Lógica "Artilharia Pesada" para 15, 20, 30, 45 min
@@ -137,11 +137,11 @@ export const getMeditationLengthInstruction = (duration: number) => {
         Você deve gerar aproximadamente **${totalWordTarget} palavras no total**.
         Isso significa cerca de **${wordsPerChapter} palavras POR CAPÍTULO** do JSON.
         
-        **PENALIDADE DE SISTEMA:** Textos curtos serão considerados falha grave. É proibido ser breve.
+        **PENALIDADE DE SISTEMA:** Textos curtos ou resumidos serão considerados falha grave. É proibido ser breve.
         
         ${fractalZoomRule}
         
-        **NUNCA USE SILÊNCIO VAZIO.** Use a técnica da "Pausa Ilustrada".
+        **NUNCA USE SILÊNCIO VAZIO.** Use a técnica da "Pausa Ilustrada" descrita abaixo.
         
         ESTRUTURA DE BLOCOS (Todos devem ser textualmente massivos):
         1. **O CORPO (INDUÇÃO):** Fracionamento profundo. Descreva o relaxamento fibra por fibra, dedo por dedo. (${wordsPerChapter} palavras)
@@ -295,10 +295,9 @@ Gere JSON: "mantra", "meditation".
 `;
 
 export const medicineRitualPrompt = (medicineName: string, medicineProperty: string, duration: number, intention?: string, animal?: string, animalTrait?: string) => {
-    const isStrong = ['Tsunu', 'Veia de Pajé', 'Pajé', 'Jurema Preta', 'Caneleiro', 'Samaúma', 'Encanto', 'Paricá'].some(n => medicineName.includes(n));
-    const blowInstruction = isStrong
-        ? "O sopro deve ser FIRME, CURTO e FORTE (O Sopro do Jaguar)."
-        : "O sopro deve ser LONGO, SUAVE e PROFUNDO (O Sopro da Jiboia).";
+    const isStrong = ['Tsunu', 'Veia de Pajé', 'Pajé', 'Jurema Preta', 'Caneleiro', 'Samaúma', 'Encanto', 'Paricá', 'Guardião'].some(n => medicineName.includes(n));
+    const blowType = isStrong ? "O SOPRO DO JAGUAR (Curto, Seco, Potente)" : "O SOPRO DA JIBOIA (Longo, Crescente, Suave)";
+    const blowDesc = isStrong ? "um tiro de canhão rápido para limpar a panema" : "uma onda do mar que cresce e cobre tudo suavemente";
 
     const animalGuide = animal 
         ? `\n*** O GUARDIÃO: ${animal} ***\nInvoque o ${animal} (${animalTrait}). Peça para o usuário sentir a pele, as garras, a visão deste animal. FUSÃO TOTÊMICA.`
@@ -307,8 +306,7 @@ export const medicineRitualPrompt = (medicineName: string, medicineProperty: str
     // Estrutura Diferenciada para Longa Duração (Agora inclui 15min+)
     const isLongSession = duration >= 15;
     
-    // Recalcula palavras alvo aqui também para garantir consistência no prompt específico
-    // Usando 190 aqui também para consistência com o novo padrão
+    // Recalcula palavras alvo aqui também para garantir consistência (190 WPM)
     const totalWords = duration * 190;
     const sectionWords = Math.floor(totalWords / 5);
 
@@ -320,18 +318,28 @@ export const medicineRitualPrompt = (medicineName: string, medicineProperty: str
         
         JSON CHAVES: "induction", "breath", "purge", "vision", "return"
         
-        1. "induction": Fracionamento Hipnótico. Entre e saia do transe. Desligue o corpo parte por parte com metáforas ricas.
-        2. "breath": O Sopro Sagrado (${blowInstruction}). Instrua as narinas. Descreva a medicina entrando como luz ou terra.
-        3. "purge": A PEIA/O CAOS. O momento difícil. A náusea, a limpeza, o confronto com a sombra. Use linguagem visceral e forte.
-        4. "vision": O VOO/O ÊXTASE. A superação. O erotismo sagrado da alma encontrando o divino.
-        5. "return": A reconstrução do corpo. Aterrissagem suave. Narre a volta célula por célula.
+        1. "induction": Fracionamento Hipnótico e Invocação. Chame a floresta. Desligue o corpo parte por parte.
+        
+        2. "breath": **O PROTOCOLO SAGRADO DE APLICAÇÃO (A Parte Mecânica)**.
+           ⚠️ ATENÇÃO: Aqui você DEVE instruir o ato físico com precisão. Não use metáforas vagas.
+           - Passo A: "Pegue seu Tepi/Kuripe. Coloque a medicina na palma. Sinta a textura. Carregue o instrumento. Bata para assentar."
+           - Passo B (LADO ESQUERDO - A MORTE): "Aponte para a narina ESQUERDA. O lado da morte e da limpeza. Respire fundo... prenda... e DÊ ${blowType}." (Descreva o impacto, o choque, a lágrima caindo).
+           - Passo C (INTERVALO RELÂMPAGO): "Respire pela boca. Recarregue rápido. Não deixe a força cair. O equilíbrio precisa ser imediato. Prepare o outro lado." (Seja breve aqui, a medicina já está agindo).
+           - Passo D (LADO DIREITO - A VIDA): "Aponte para a narina DIREITA. O lado da vida e do renascimento. Alinhe... e SOPRE."
+           - Passo E (O TRAVAMENTO): "Pouse o instrumento agora. Feche os olhos. Ajeite a coluna. Receba a Força."
+        
+        3. "purge": A PEIA/O CAOS. O momento logo após o segundo sopro. A tontura, a pressão na testa, a náusea sagrada. Valide o desconforto como cura. Use linguagem visceral e forte.
+        
+        4. "vision": O VOO/O ÊXTASE. A calmaria após a tempestade. A clareza do animal de poder. A superação.
+        
+        5. "return": A reconstrução do corpo. Aterrissagem suave. Narre a volta célula por célula, trazendo a força da floresta para o dia a dia.
         ` 
         : `
         ESTRUTURA CURTA (${duration} MINUTOS):
         Gere um Array de objetos { "title", "text" }.
-        1. SINTONIZAÇÃO (Ilustre a calma).
-        2. O SOPRO (${blowInstruction}).
-        3. A FORÇA (Descreva a sensação).
+        1. PREPARAÇÃO (Carregar o instrumento).
+        2. O SOPRO (${blowType} - Esquerda e Direita rápido).
+        3. A FORÇA (Descreva o impacto).
         4. MIRAÇÃO.
         5. RETORNO.
         `;
